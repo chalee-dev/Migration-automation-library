@@ -1,0 +1,119 @@
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 
+  Create a lambda function that will perform the lookup and return a value for the MAP program tags. 
+  This works in conjunction with the MAP Automator Solution.
+
+Parameters:
+  S3Region:
+    Type: String
+    Description: Choose the region selected for the inventory upload to AWS Migration Hub.
+    MinLength: 1
+    ConstraintDescription: Required field
+    AllowedValues:
+      - us-east-1
+      - us-west-2
+      - ap-southeast-1
+      - ap-southeast-2
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+  MapAutomatorMigrationHubInOutS3BucketName:
+    Type: String
+    Description: The S3 bucket name where the MigrationHub files are located. This is the S3 bucket that you upload your inventory to.
+Resources:
+  LambdaIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub mapAutomator-S3SelectLambdaRole-${AWS::AccountId}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - 'sts:AssumeRole'
+      MaxSessionDuration: 3600
+      Path: /
+      Policies:
+        # Allow GetObject for all files in the Originating IDs bucket
+        - PolicyName: MapAutomatorMigrationHubInOutS3BucketAccess
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action: 
+              - s3:GetObject
+              - s3:ListBucket
+              Resource:
+              - !Sub arn:aws:s3:::${MapAutomatorMigrationHubInOutS3BucketName}/*
+              - !Sub arn:aws:s3:::${MapAutomatorMigrationHubInOutS3BucketName}
+        # Allow Lambda to write to its specific log group
+        - PolicyName: LambdaExecutionRoleForLogGroup
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action: 
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              Resource:
+              - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/mapAutomator-GetMapTagsForHost-${AWS::AccountId}:*"
+
+  MAPToolsLambdaLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.7
+      Content:
+        S3Bucket: !Join 
+          - ''
+          - - map-automation-
+            - !Ref S3Region
+        S3Key: mapTools-layer.zip
+      Description: MAP 2.0 tools library
+      LayerName: mapTools
+              
+  MAPTagLookupLambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Code: 
+        S3Bucket: !Join 
+          - ''
+          - - map-automation-
+            - !Ref S3Region
+        S3Key: MapTaggingAutomator.zip 
+      Description: Look up the MAP program tags for Server and App based on the hostname
+      FunctionName: !Sub "mapAutomator-GetMapTagsForHost-${AWS::AccountId}"
+      Handler: lambda-getMapTags.handler
+      Runtime: python3.7
+      Role: !GetAtt LambdaIAMRole.Arn
+      Timeout: 5
+      Layers:
+        - !Ref MAPToolsLambdaLayer
+      Environment:
+          Variables:
+            MAP_MIGRATION_HUB_S3_BUCKET_NAME: !Ref MapAutomatorMigrationHubInOutS3BucketName
+
+Outputs:
+  MAPTagLookupLambdaArn:
+    Description: The ARN for the Lambda used to look up the MAP program tags for Server and App based on the hostname
+    Value: !GetAtt MAPTagLookupLambda.Arn
+    Export:
+      Name: MAPMigration-TagLookupLambdaArn

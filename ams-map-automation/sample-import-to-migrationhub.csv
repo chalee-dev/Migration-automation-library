@@ -1,0 +1,11 @@
+ExternalId,SMBiosId,IPAddress,MACAddress,HostName,VMware.MoRefId,VMware.VCenterId,CPU.NumberOfProcessors,CPU.NumberOfCores,CPU.NumberOfLogicalCores,OS.Name,OS.Version,VMware.VMName,RAM.TotalSizeInMB,RAM.UsedSizeInMB.Avg,RAM.UsedSizeInMB.Max,CPU.UsagePct.Avg,CPU.UsagePct.Max,DiskReadsPerSecondInKB.Avg,DiskWritesPerSecondInKB.Avg,DiskReadsPerSecondInKB.Max,DiskWritesPerSecondInKB.Max,DiskReadOpsPerSecond.Avg,DiskWriteOpsPerSecond.Avg,DiskReadOpsPerSecond.Max,DiskWriteOpsPerSecond.Max,NetworkReadsPerSecondInKB.Avg,NetworkWritesPerSecondInKB.Avg,NetworkReadsPerSecondInKB.Max,NetworkWritesPerSecondInKB.Max,Applications,Tags
+,,,,WA2AASW850D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp1,
+,,,,DA2AAWS231D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp1,
+,,,,DA2AAWS052D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,DA2AAWS051D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,DA2AAWS502D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,WA2AASW840D1,,,,,,,,,,,,,,,,,,,,,,,,,,"SampleApp1, SampleApp2",
+,,,,DA2AASW850D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,DA2AASW840D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,DA2AAEC551D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,
+,,,,DA2AAEC551D1,,,,,,,,,,,,,,,,,,,,,,,,,,SampleApp2,

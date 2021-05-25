@@ -1,0 +1,29 @@
+{
+    "config": [
+        {
+            "Excel_Tab_Name": "Re-host-Dashboard",
+            "Row_With_Field_Names": 1,
+            "Wave_Column_Name": "Wave",
+            "wave_id_Column_Name": "Wave",
+            "Server_Column_Name": "Server Name",
+            "Application_Column_Name": "App",
+            "cloudendure_projectname_Column_Name": "cloudendure project name",
+            "aws_accountid_Column_Name": "Target AWS account",
+            "server_os_Column_Name": "Operating System",
+            "server_os_version_Column_Name": "OS Version",
+            "server_fqdn_Column_Name": "FQDN",
+            "server_tier_Column_Name": "server tier",
+            "server_environment_Column_Name": "server environment",
+            "subnet_IDs_Column_Name": "Target Subnet",
+            "privateIPs_Column_Name": "Target Private IP",
+            "securitygroup_IDs_Column_Name": "Target Security Group",
+            "subnet_IDs_test_Column_Name": "Subnet for Testing",
+            "securitygroup_IDs_test_Column_Name": "security group IDs test",
+            "iamRole_Column_Name": "IAM Role",
+            "instanceType_Column_Name": "Target EC2 Instance Type",
+            "tenancy_Column_Name": "tenancy",
+            "First_Tag_Name": "ApplicationName",
+            "Last_Tag_Name": "AppCat"
+        }
+    ]
+}

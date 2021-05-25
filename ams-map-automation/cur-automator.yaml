@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create/Validate CUR as per MAP requirements. Contact your AWS account
+  team for questions/issues
+Parameters:
+  S3Region:
+    Type: String
+    Description: Select the region for S3 bucket to host CUR - Ensure the region you're
+      in now matches what you select from the list.
+    MinLength: 1
+    ConstraintDescription: Required field
+    AllowedValues:
+      - us-east-1
+      - us-west-2
+      - ap-southeast-1
+      - ap-southeast-2
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+
+Resources:
+  CostAndUsageS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub 'cur-bucket-${AWS::StackName}-${AWS::AccountId}'
+      Tags:
+        - Key: map-migrated
+          Value: ''
+        - Key: map-migrated-app
+          Value: ''
+        - Key: aws-migration-project-id
+          Value: ''
+        - Key: map-win-modernized
+          Value: ''
+        - Key: map-sap
+          Value: ''
+        - Key: map-dba
+          Value: ''
+  CostAndUsageS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref 'CostAndUsageS3Bucket'
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: billingreports.amazonaws.com
+            Action:
+              - s3:GetBucketAcl
+              - s3:GetBucketPolicy
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref 'CostAndUsageS3Bucket'
+          - Effect: Allow
+            Principal:
+              Service: billingreports.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref 'CostAndUsageS3Bucket'
+                - /*
+  CostAndUsageLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-CostAndUsageLambdaFunction'
+      Code:
+        S3Bucket: !Join
+          - ''
+          - - map-automation-
+            - !Ref 'S3Region'
+        S3Key: cost_and_usage_reports_lambda_dynamic_region.zip
+      Description: Lambda function for Billing report creation.
+      Environment:
+        Variables:
+          REPORT_BUCKET_NAME: !Sub 'cur-bucket-${AWS::StackName}-${AWS::AccountId}'
+          REPORT_NAME: map-migrated-report
+          REPORT_NAME_PREFIX: map-migrated
+          REPORT_PATH_PREFIX: map-credit-tracking-1
+          S3_REGION: !Ref 'S3Region'
+      Handler: cost_and_usage_reports_lambda_dynamic_region.lambda_handler
+      MemorySize: 128
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/map-cur-automator
+      Runtime: python3.7
+      Timeout: 120
+  InvokeCostAndUsageLambda:
+    Type: Custom::InvokeLambda
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt 'CostAndUsageLambdaFunction.Arn'
+Outputs:
+  BucketName:
+    Value: !Ref 'CostAndUsageS3Bucket'
+    Description: Name of the Amazon S3 bucket created.

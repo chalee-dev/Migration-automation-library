@@ -1,0 +1,11 @@
+sqlescapy-1.0.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+sqlescapy-1.0.1.dist-info/LICENSE,sha256=H2-6T_HbEmlWXvhtxkFin4_8KiUCPkvGedj4yIMsQ-E,1070
+sqlescapy-1.0.1.dist-info/METADATA,sha256=TWRLae4vMQIv5MP19iihL1uHHDVODelZycc9KaNjslo,1052
+sqlescapy-1.0.1.dist-info/RECORD,,
+sqlescapy-1.0.1.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+sqlescapy-1.0.1.dist-info/WHEEL,sha256=p46_5Uhzqz6AzeSosiOnxK-zmFja1i22CrQCjmYe8ec,92
+sqlescapy-1.0.1.dist-info/top_level.txt,sha256=e78PAsbi_1-13trnYCNl4SzYEZ5CJe044ytsbkDQi5U,10
+sqlescapy/__init__.py,sha256=Z8c83NczadYauLhtwgcxZna99cLd4TtTxMM3ZS_3ixM,52
+sqlescapy/__pycache__/__init__.cpython-38.pyc,,
+sqlescapy/__pycache__/sqlescape.cpython-38.pyc,,
+sqlescapy/sqlescape.py,sha256=WNkkNDeBf3ZhOU-WCl760rThQ_iEniOk6pUCqOlZ1gs,356

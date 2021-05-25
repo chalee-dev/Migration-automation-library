@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create an IAM role needed for the cur-automator solution. AMS requires this role to be executed separately.
+
+Resources:
+  CostAndUsageIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: map-cur-automator
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: IAM Role for cost and usage report lambda function
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/job-function/Billing
+        - arn:aws:iam::aws:policy/AWSOrganizationsReadOnlyAccess
+      Path: /
+      Policies:
+        # Allow GetObject for all files in the CUR bucket
+        - PolicyName: AmazonS3ReadOnlyAccessCostAndUsageS3Bucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 'arn:aws:s3:::cur-bucket-${AWS::StackName}-${AWS::AccountId}/*'
+                  - !Sub 'arn:aws:s3:::cur-bucket-${AWS::StackName}-${AWS::AccountId}'
+        # Allow Lambda to write to its specific log group
+        - PolicyName: LambdaExecutionRoleForLogGroup
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-CostAndUsageLambdaFunction:*'

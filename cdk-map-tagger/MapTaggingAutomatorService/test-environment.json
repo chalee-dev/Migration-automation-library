@@ -1,0 +1,6 @@
+{
+    "MapTaggingAutomatorMAPTagLookupLambda0C98C498": {
+      "MAP_MIGRATION_HUB_S3_BUCKET_NAME":"migration-hub-inventory-bucket-137120702446",
+      "AWS_REGION":"us-east-1"
+    }
+}

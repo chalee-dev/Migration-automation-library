@@ -1,0 +1,5 @@
+id,accountNumber,name,description,state,serverCount,creationTimeStamp,lastModifiedTimeStamp
+d-application-022ibl9xfyc9c2,391077388892,App1,,ACTIVE,0,2020-07-08 19:18:52,2020-07-14 20:46:47
+d-application-0btvgp146h8usl,391077388892,Common,,ACTIVE,3,2020-07-14 20:46:43,2020-07-14 20:46:44
+d-application-04n0p0yhkiss42,391077388892,App2,,ACTIVE,0,2020-07-08 19:18:52,2020-07-14 20:46:47
+d-application-08vlbu7tgdtu8l,391077388892,App3,,ACTIVE,1,2020-07-14 20:46:41,2020-07-14 20:46:41

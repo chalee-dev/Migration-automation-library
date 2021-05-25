@@ -1,0 +1,251 @@
+Parameters:
+  MapAutomatorMigrationHubInOutS3BucketName:
+    Type: String
+    Description: The S3 bucket name where the MigrationHub files are located. This is the S3 bucket that you upload your inventory to.
+  AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207S3Bucket761BBE60:
+    Type: String
+    Description: S3 bucket for asset "3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207"
+  AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207S3VersionKeyCB849B6F:
+    Type: String
+    Description: S3 key for asset version "3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207"
+  AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207ArtifactHash090E13F6:
+    Type: String
+    Description: Artifact hash for asset "3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207"
+  AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36S3Bucket4F0BB318:
+    Type: String
+    Description: S3 bucket for asset "1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36"
+  AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36S3VersionKey8FE62E41:
+    Type: String
+    Description: S3 key for asset version "1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36"
+  AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36ArtifactHash9A76E340:
+    Type: String
+    Description: Artifact hash for asset "1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36"
+Resources:
+  MapTaggingAutomatorMapAutomatorMigrationHubInOutS3BucketAccess3A5AE4C0:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: MapAutomatorMigrationHubInOutS3BucketName
+                    - /*
+              - Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: MapAutomatorMigrationHubInOutS3BucketName
+        Version: "2012-10-17"
+      PolicyName: MapAutomatorMigrationHubInOutS3BucketAccess
+      Roles:
+        - Ref: MapTaggingAutomatorLambdaIAMRole1ED340AB
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/MapTaggingAutomator/MapAutomatorMigrationHubInOutS3BucketAccess/Resource
+  MapTaggingAutomatorLambdaExecutionRoleForLogGroupC066C991:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:logs:"
+                  - Ref: AWS::Region
+                  - ":"
+                  - Ref: AWS::AccountId
+                  - :log-group:/aws/lambda/mapAutomator-GetMapTagsForHost-
+                  - Ref: AWS::AccountId
+                  - :*
+        Version: "2012-10-17"
+      PolicyName: LambdaExecutionRoleForLogGroup
+      Roles:
+        - Ref: MapTaggingAutomatorLambdaIAMRole1ED340AB
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/MapTaggingAutomator/LambdaExecutionRoleForLogGroup/Resource
+  MapTaggingAutomatorLambdaIAMRole1ED340AB:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      RoleName:
+        Fn::Join:
+          - ""
+          - - mapAutomator-S3SelectLambdaRole-
+            - Ref: AWS::AccountId
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/MapTaggingAutomator/LambdaIAMRole/Resource
+  MapTaggingAutomatorMAPToolsLambdaLayer5568EE50:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket:
+          Ref: AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207S3Bucket761BBE60
+        S3Key:
+          Fn::Join:
+            - ""
+            - - Fn::Select:
+                  - 0
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207S3VersionKeyCB849B6F
+              - Fn::Select:
+                  - 1
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters3388decefda3748a7db6696ddb24188bf77c6e35a0f119d8b5c9308730afb207S3VersionKeyCB849B6F
+      CompatibleRuntimes:
+        - python3.7
+      Description: MAP 2.0 tools library
+      LayerName: mapTools
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/MapTaggingAutomator/MAPToolsLambdaLayer/Resource
+      aws:asset:path: /Users/adspicer/Code/devops_aod/map-tagging-automator/MapTaggingAutomatorService/resources/mapTools
+      aws:asset:property: Content
+  MapTaggingAutomatorMAPTagLookupLambda0C98C498:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket:
+          Ref: AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36S3Bucket4F0BB318
+        S3Key:
+          Fn::Join:
+            - ""
+            - - Fn::Select:
+                  - 0
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36S3VersionKey8FE62E41
+              - Fn::Select:
+                  - 1
+                  - Fn::Split:
+                      - "||"
+                      - Ref: AssetParameters1ced0b38f99fd215f8dca84f3203339e3f85ed240c05d9214d7411cfce22ff36S3VersionKey8FE62E41
+      Role:
+        Fn::GetAtt:
+          - MapTaggingAutomatorLambdaIAMRole1ED340AB
+          - Arn
+      Description: Look up the MAP program tags for Server and App based on the app name
+      Environment:
+        Variables:
+          MAP_MIGRATION_HUB_S3_BUCKET_NAME:
+            Ref: MapAutomatorMigrationHubInOutS3BucketName
+      FunctionName:
+        Fn::Join:
+          - ""
+          - - mapAutomator-GetMapTagsForHost-
+            - Ref: AWS::AccountId
+      Handler: getMapTags.handler
+      Layers:
+        - Ref: MapTaggingAutomatorMAPToolsLambdaLayer5568EE50
+      Runtime: python3.7
+      Timeout: 5
+    DependsOn:
+      - MapTaggingAutomatorLambdaIAMRole1ED340AB
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/MapTaggingAutomator/MAPTagLookupLambda/Resource
+      aws:asset:path: /Users/adspicer/Code/devops_aod/map-tagging-automator/MapTaggingAutomatorService/resources/getMapTags
+      aws:asset:property: Code
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAAE1VOQQrCMBB8i/d0RRTRmyJ4EiwVvK/pqtE2kewGKSF/t6kKeprZnRlmJrCcwWS0wicXur6Po3aeIB4E9V1tzrZEjy0JebVxlsUHLWrNTNI7LsZeVEXsgteUzfsgjyCZ/X77YG3EOJtUbokGW4ila4zuhoY3q1wzuDMm1WB7qhHiDjvyR/Lcx7P6d2+D1fIRvjwpnhaYBzIMO1NSZSdXZ8dTWMB8dGNjCh+smJageuML+kbdngUBAAA=
+    Metadata:
+      aws:cdk:path: MapTaggingAutomator/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Outputs:
+  MapTaggingAutomatorMAPTagLookupLambdaArn6389DD44:
+    Description: The ARN for the Lambda used to look up the MAP program tags for Server and App based on the hostname
+    Value:
+      Fn::GetAtt:
+        - MapTaggingAutomatorMAPTagLookupLambda0C98C498
+        - Arn
+    Export:
+      Name: MAPMigration-TagLookupLambdaArn
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+

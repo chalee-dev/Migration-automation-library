@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: An example ASG configuration for EC2 servers being created.
+
+Parameters:
+  environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  
+Mappings:
+  Environment:
+    dev:
+      appName: MemeGenerator
+      instanceType: t2.micro
+      instanceAmi: ami-0915bcb5fa77e4892
+      vpcCidr: 10.200.0.0/24
+      privateSubnetAZ1CIDR: 10.200.0.0/25
+      privateSubnetAZ2CIDR: 10.200.0.128/25
+      AvailabilityZone1: us-east-1a
+      AvailabilityZone2: us-east-1b
+    prod:
+      appName: MemeGenerator
+      instanceType: t2.large
+      instanceAmi: ami-0915bcb5fa77e4892
+      vpcCidr: 10.200.10.0/24
+      privateSubnetAZ1CIDR: 10.200.10.0/25
+      privateSubnetAZ2CIDR: 10.200.10.128/25
+      AvailabilityZone1: us-east-1a
+      AvailabilityZone2: us-east-1b
+  Tags:
+    dev:
+      owner: marketing
+      alerts: alerts@example.com
+      app: MemeGenerator
+
+Resources:
+  # ************************************************************************
+  # Get map tags
+  LambdaGetMAPTags:
+    Type: Custom::LambdaGetMAPTags
+    Properties:
+      ServiceToken: !ImportValue MAPMigration-TagLookupLambdaArn
+      appName: !FindInMap [ Environment, !Ref environment, appName ]
+
+  # ************************************************************************
+  # Create VPC and subnets
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [ Environment, !Ref environment, vpcCidr ]
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: owner
+          Value: !FindInMap [ Tags, !Ref environment, owner ]
+        - Key: alerts
+          Value: !FindInMap [ Tags, !Ref environment, alerts ]
+        - Key: app
+          Value: !FindInMap [ Tags, !Ref environment, app ]
+
+  PrivateSubnet1AZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Environment, !Ref environment, privateSubnetAZ1CIDR ]
+      AvailabilityZone: !FindInMap [ Environment, !Ref environment, AvailabilityZone1 ]
+  PrivateSubnet1AZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Environment, !Ref environment, privateSubnetAZ2CIDR ]
+      AvailabilityZone: !FindInMap [ Environment, !Ref environment, AvailabilityZone2 ]
+
+  # ************************************************************************
+  # Create webserver ASG
+  SshSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${environment}-sg-remote-linux
+      GroupDescription: "This security group provides ssh access from On-prem"
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+        - CidrIp: "10.0.0.0/8"
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      VpcId:
+        Ref: "VPC"
+
+  myASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1AZ1
+        - !Ref PrivateSubnet1AZ2
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref mySimpleConfig
+        Version: !GetAtt mySimpleConfig.LatestVersionNumber
+      MinSize: '0'
+      MaxSize: '2'
+      DesiredCapacity: '2'
+      Tags:
+        - Key: map-migrated
+          Value: !GetAtt LambdaGetMAPTags.map-migrated
+          PropagateAtLaunch: false
+        - Key: map-migrated-app
+          Value: !GetAtt LambdaGetMAPTags.map-migrated-app
+          PropagateAtLaunch: false
+  
+  mySimpleConfig:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub SampleEC2s_${AWS::StackName}
+      LaunchTemplateData:
+          ImageId: !FindInMap [ Environment, !Ref environment, instanceAmi ]
+          InstanceType: !FindInMap [ Environment, !Ref environment, instanceType ]
+          SecurityGroupIds: [!Ref SshSecurityGroup]
+          TagSpecifications:
+          - ResourceType: instance
+            Tags:
+            - Key: owner
+              Value: !FindInMap [ Tags, !Ref environment, owner ]
+            - Key: alerts
+              Value: !FindInMap [ Tags, !Ref environment, alerts ]
+            - Key: app
+              Value: !FindInMap [ Tags, !Ref environment, app ]
+            - Key: map-migrated
+              Value: !GetAtt LambdaGetMAPTags.map-migrated
+            - Key: map-migrated-app
+              Value: !GetAtt LambdaGetMAPTags.map-migrated-app
+          - ResourceType: volume
+            Tags:
+            - Key: owner
+              Value: !FindInMap [ Tags, !Ref environment, owner ]
+            - Key: alerts
+              Value: !FindInMap [ Tags, !Ref environment, alerts ]
+            - Key: app
+              Value: !FindInMap [ Tags, !Ref environment, app ]
+            - Key: map-migrated
+              Value: !GetAtt LambdaGetMAPTags.map-migrated
+            - Key: map-migrated-app
+              Value: !GetAtt LambdaGetMAPTags.map-migrated-app

@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template creates an IAM role used to upload lists of on-premise servers to AWS Migration Hub,
+  generates Originating IDs, and exports the generated results. Contact your AWS account team for questions/issues.
+Resources:
+  MyIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: map-originating-ids-automator
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: IAM Role for the Originating IDs automator lambda function
+      Path: /
+      Policies:
+        # Allow Lambda to write to its specific log group
+        - PolicyName: LambdaExecutionRoleForLogGroup
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/mapAutomator-OriginatingIdsAutomator-${AWS::AccountId}:*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/mapAutomator-OriginatingIdsAutomator-CreateFolder-${AWS::AccountId}:*
+        # Allow GetObject for all files in the Originating IDs bucket
+        - PolicyName: OriginatingIdsMigrationHubInOutS3BucketAccess
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action: 
+              - s3:PutObject
+              - s3:GetObject
+              Resource:
+              - !Sub arn:aws:s3:::migration-hub-inventory-bucket-${AWS::AccountId}/*
+        # Allow the Originating IDs Automator to upload the server inventory and download the inventory.
+        # The Application Discovery Services does not support specifying a specific ARN in the resource section of the policy.
+        # See: https://docs.aws.amazon.com/application-discovery/latest/userguide/security_iam_service-with-iam.html
+        - PolicyName: OriginatingIdsMigrationHub
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action: 
+              - discovery:DescribeExportTasks
+              - discovery:StartImportTask
+              - discovery:StartExportTask
+              - discovery:GetDiscoverySummary
+              - discovery:CreateTags
+              - mgh:GetHomeRegion
+              - mgh:CreateHomeRegionControl
+              - discovery:ListConfigurations
+              - discovery:CreateApplication
+              - discovery:UpdateApplication
+              - discovery:AssociateConfigurationItemsToApplication
+              - discovery:DisassociateConfigurationItemsFromApplication
+              Resource:
+              - '*'

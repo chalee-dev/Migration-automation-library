@@ -1,0 +1,7 @@
+-e .
+
+aws-cdk.core
+aws-cdk.aws-lambda
+aws-cdk.aws-iam
+
+aws_cdk_test_synth

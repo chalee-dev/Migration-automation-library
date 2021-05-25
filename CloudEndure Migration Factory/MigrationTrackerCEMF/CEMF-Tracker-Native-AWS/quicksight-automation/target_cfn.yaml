@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  AWS CloudFormation to consume a custom CloudFormation resource with Lambda.
+  It calls a previously created CloudFormation Custom Resource Lambda and puts the
+  result into the output of the stack.
+
+Parameters:
+  NewDashboardName:
+    Type: String
+    Description: The name of the dashboard/template you want to copy.
+    Default: testdashboard
+  SourceTemplateName:
+    Type: String
+    Description: The desired name for the NEW template/dashboard you want to create.
+    Default: copydashboardtest
+  SourceAcctNo:
+    Type: String
+    Description: The account number for the target account.
+    Default: 163427633715
+  SourceFunctionName:
+    Type: String
+    Description: The name of the lambda function you deployed on the first step.
+    Default: arn:aws:lambda:us-east-1:619431771094:function:test-dashboard-copy
+  UserName:
+    Type: String
+    Description: The name of the user that will own the dashboard/analysis.
+    Default: lykasegu-dev/lykasegu-Isengard
+
+Resources:
+  QuicksightTargetCreation:
+    Type: Custom::QuicksightSourceCreation
+    Properties:
+      ServiceToken: !Ref SourceFunctionName
+      SourceAcctNo: !Ref SourceAcctNo
+      SourceTemplateName: !Ref SourceTemplateName
+      NewDashboardName: !Ref NewDashboardName
+      UserName: !Ref UserName

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An example set of EC2 servers being created.
+  
+Parameters:
+  hostName: 
+    Type: String
+    Default: WA2AASW850D1
+    Description: The name of the hostname. This hostname matches to one in the migrationHubServerFileName.
+  appName:
+    Type: String
+    Default: SampleApp1
+    Description: The name of the application. This name matches to one in the migrationHubAppFileName.
+  InstanceSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: The subnet Id for the EC2 instance
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: The security group Id for the EC2 instance
+  InstanceType:
+    Description: Sample EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge,
+      m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge,
+      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge,
+      g3.8xlarge,
+      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, 
+      i3.xlarge, i3.2xlarge, i3.4xlarge, i3.8xlarge,
+      d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge]
+    ConstraintDescription: must be a valid EC2 instance type.
+  InstanceAmiId:
+    Description: The AMI for the instance
+    Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+
+Resources:
+  LambdaGetMAPTags:
+    Type: Custom::LambdaGetMAPTags
+    Properties:
+      ServiceToken: !ImportValue MAPMigration-TagLookupLambdaArn
+      hostName: !Ref hostName
+      appName: !Ref appName
+  
+  SampleEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds: [!Ref InstanceSecurityGroup]
+      ImageId: !Ref InstanceAmiId
+      SubnetId: !Ref InstanceSubnetId
+      Tags:
+        - Key: map-migrated
+          Value: !GetAtt LambdaGetMAPTags.map-migrated
+        - Key: map-migrated-app
+          Value: !GetAtt LambdaGetMAPTags.map-migrated-app

@@ -1,0 +1,67 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This AWS CFN template will deploy the lambda to the target account. This lambda will be used by the CFN template to get the information from the source dashboard and copy it in this account.
+
+Metadata:
+  Template Authors: "Lyka Segura"
+  Template Version: "1"
+  License Information:
+    Software Name: N/A
+  Template Repository: "https://gitlab.aws.dev/lykasegu/quicksight-cfn-copy"
+
+Parameters:
+  pLambdaFunctionName:
+    Type: String
+    Description: This is going to be the name of your deployed lambda.
+    Default: quicksight-target-lambda
+  pRoleNameforLambda:
+    Type: String
+    Description: This is for the role name that will be created and attached to the lambda.
+    Default: SRCQSLambdaRole
+  pS3BucketName:
+    Type: String
+    Description: S3 bucket where the source code ie. source/main.py and target/main.py are stored
+    Default: dev-code-storage-lykasegu
+  pZipFileName:
+    Type: String
+    Description: Name of the zip file where the code is stored. ie. source-main.zip / target-main.zip
+    Default: target-main.zip
+
+Resources:
+  rSourceLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "main.lambda_handler"
+      Role: !GetAtt rLambdaRole.Arn
+      Runtime: python3.8
+      FunctionName: !Ref pLambdaFunctionName
+      Code:
+        S3Bucket: !Ref pS3BucketName
+        S3Key: !Ref pZipFileName
+
+  rLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+      Policies:
+        - PolicyName: qsfullaccesslambda
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - quicksight:*
+                Resource: "*"
+      RoleName: !Ref pRoleNameforLambda
